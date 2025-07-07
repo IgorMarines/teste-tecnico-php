@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Teste AJAX Seguro</title>
+</head>
+<body>
+  <h1>Resultado:</h1>
+  <div id="result">Carregando...</div>
+
+  <script>
+    async function loadData() {
+      try {
+        const response = await fetch('/data.php?token=abc123');
+
+        if (!response.ok) {
+          throw new Error(`Erro do servidor: ${response.status}`);
+        }
+
+        const data = await response.json();
+        document.getElementById('result').textContent = data.content; // seguro contra XSS
+      } catch (error) {
+        console.error(error);
+        document.getElementById('result').textContent = 'Erro ao carregar os dados.';
+      }
+    }
+
+    loadData();
+  </script>
+</body>
+</html>

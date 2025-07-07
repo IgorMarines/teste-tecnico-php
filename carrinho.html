@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Checkout</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; }
+    .card { border: 1px solid #ccc; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
+    .erro { color: red; }
+    .estoque-baixo { color: orange; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Resumo do Pedido</h1>
+  <div id="carrinho"></div>
+
+  <h2>Frete</h2>
+  <div id="frete"></div>
+
+  <div id="erros" class="erro"></div>
+
+  <script src="checkout.js"></script>
+</body>
+</html>

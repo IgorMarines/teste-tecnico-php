@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Produtos</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      margin: 2rem;
+      max-width: 800px;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+
+    .filtros {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    #tabela {
+      height: 500px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      position: relative;
+    }
+
+    #conteudo {
+      position: relative;
+    }
+
+    .item {
+      position: absolute;
+      height: 50px;
+      width: 100%;
+      border-bottom: 1px solid #eee;
+      padding: 8px;
+      box-sizing: border-box;
+      background-color: #fff;
+    }
+
+    .item:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+  </style>
+</head>
+<body>
+  <h1>Produtos</h1>
+
+  <div class="filtros">
+    <input type="text" id="filtro" placeholder="Buscar por nome..." />
+    <select id="ordem">
+      <option value="asc">A-Z</option>
+      <option value="desc">Z-A</option>
+    </select>
+  </div>
+
+  <div id="tabela">
+    <div id="conteudo"></div>
+  </div>
+
+  <script>
+    const tabela = document.getElementById('tabela');
+    const conteudo = document.getElementById('conteudo');
+    const filtro = document.getElementById('filtro');
+    const ordem = document.getElementById('ordem');
+
+    const itemAltura = 50;
+    let dados = [];
+
+    async function buscarDados() {
+      const filtroValor = filtro.value;
+      const ordemValor = ordem.value;
+
+      const res = await fetch(`/produtos.php?page=1&limit=10000&filtro=${encodeURIComponent(filtroValor)}&ordem=${ordemValor}`);
+      dados = await res.json();
+
+      conteudo.style.height = `${dados.length * itemAltura}px`;
+      renderizar();
+    }
+
+    function renderizar() {
+      const scrollTop = tabela.scrollTop;
+      const inicio = Math.floor(scrollTop / itemAltura);
+      const fim = inicio + Math.ceil(tabela.clientHeight / itemAltura) + 5;
+
+      conteudo.innerHTML = '';
+
+      for (let i = inicio; i < fim && i < dados.length; i++) {
+        const produto = dados[i];
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.style.top = `${i * itemAltura}px`;
+        div.innerHTML = `<strong>${produto.nome}</strong> - R$ ${parseFloat(produto.preco).toFixed(2)}`;
+        conteudo.appendChild(div);
+      }
+    }
+
+    let debounce;
+    filtro.addEventListener('input', () => {
+      clearTimeout(debounce);
+      debounce = setTimeout(buscarDados, 300);
+    });
+
+    ordem.addEventListener('change', buscarDados);
+    tabela.addEventListener('scroll', renderizar);
+
+    buscarDados();
+  </script>
+</body>
+</html>

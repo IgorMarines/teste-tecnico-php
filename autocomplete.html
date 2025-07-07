@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Autocomplete Acessível</title>
+  <style>
+    .autocomplete {
+      position: relative;
+      max-width: 400px;
+    }
+
+    #sugestoes {
+      border: 1px solid #ccc;
+      border-top: none;
+      max-height: 200px;
+      overflow-y: auto;
+      position: absolute;
+      width: 100%;
+      background: white;
+      z-index: 1000;
+    }
+
+    .sugestao {
+      padding: 8px;
+      cursor: pointer;
+    }
+
+    .sugestao.active,
+    .sugestao:hover {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Buscar produto</h1>
+  <div class="autocomplete">
+    <label for="busca">Digite o nome:</label>
+    <input
+      type="text"
+      id="busca"
+      aria-autocomplete="list"
+      aria-controls="sugestoes"
+      aria-expanded="false"
+      aria-haspopup="listbox"
+      role="combobox"
+      autocomplete="off"
+      aria-activedescendant=""
+    />
+    <ul id="sugestoes" role="listbox"></ul>
+  </div>
+
+  <script>
+    const input = document.getElementById('busca');
+    const lista = document.getElementById('sugestoes');
+
+    let indexSelecionado = -1;
+    let sugestoes = [];
+
+    input.addEventListener('input', async () => {
+      const query = input.value.trim();
+      indexSelecionado = -1;
+
+      if (query.length === 0) {
+        lista.innerHTML = '';
+        input.setAttribute('aria-expanded', 'false');
+        return;
+      }
+
+      const res = await fetch(`/autocomplete.php?q=${encodeURIComponent(query)}`);
+      sugestoes = await res.json();
+
+      lista.innerHTML = '';
+      sugestoes.forEach((produto, i) => {
+        const li = document.createElement('li');
+        li.id = `produto-${i}`;
+        li.setAttribute('role', 'option');
+        li.className = 'sugestao';
+        li.textContent = produto.nome;
+
+        li.addEventListener('click', () => {
+          input.value = produto.nome;
+          lista.innerHTML = '';
+          input.setAttribute('aria-expanded', 'false');
+        });
+
+        lista.appendChild(li);
+      });
+
+      input.setAttribute('aria-expanded', sugestoes.length > 0 ? 'true' : 'false');
+    });
+
+    input.addEventListener('keydown', (e) => {
+      const items = lista.querySelectorAll('.sugestao');
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (indexSelecionado < items.length - 1) {
+          indexSelecionado++;
+          atualizarFoco(items);
+        }
+      }
+
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (indexSelecionado > 0) {
+          indexSelecionado--;
+          atualizarFoco(items);
+        }
+      }
+
+      if (e.key === 'Enter' && indexSelecionado >= 0) {
+        e.preventDefault();
+        items[indexSelecionado].click();
+      }
+
+      if (e.key === 'Escape') {
+        lista.innerHTML = '';
+        input.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    function atualizarFoco(items) {
+      items.forEach((item, i) => {
+        if (i === indexSelecionado) {
+          item.classList.add('active');
+          input.setAttribute('aria-activedescendant', item.id);
+        } else {
+          item.classList.remove('active');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

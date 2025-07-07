@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Teste de Token</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+    }
+
+    button {
+      margin: 10px 0;
+      padding: 10px;
+    }
+
+    pre {
+      background: #f0f0f0;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Teste de Token Temporário</h1>
+
+  <button onclick="gerarToken()">🔐 Gerar Token</button>
+  <pre id="tokenBox">Token: (vazio)</pre>
+
+  <button onclick="buscarDados()">📦 Buscar Dados Protegidos</button>
+  <pre id="dadosBox">Resposta: (aguardando)</pre>
+
+  <script>
+    let tokenAtual = '';
+
+    function gerarToken() {
+      fetch('token.php')
+        .then(res => res.json())
+        .then(data => {
+          tokenAtual = data.token;
+          document.getElementById('tokenBox').textContent = 'Token: ' + tokenAtual;
+        })
+        .catch(() => {
+          document.getElementById('tokenBox').textContent = 'Erro ao gerar token';
+        });
+    }
+
+    function buscarDados() {
+      if (!tokenAtual) {
+        alert('Gere um token antes.');
+        return;
+      }
+
+      fetch(`dados.php?token=${tokenAtual}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('dadosBox').textContent = 'Resposta: ' + JSON.stringify(data, null, 2);
+        })
+        .catch(() => {
+          document.getElementById('dadosBox').textContent = 'Erro ao buscar dados';
+        });
+    }
+  </script>
+</body>
+</html>
